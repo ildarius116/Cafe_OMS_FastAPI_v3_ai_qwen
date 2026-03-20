@@ -1,0 +1,19 @@
+description = "Clean up Design Lab temporary files"
+
+prompt = """
+Clean up any temporary Design Lab files from a previous session.
+
+1. Check if `.gemini-design/` directory exists. If so, delete it entirely.
+2. Check for any of these temporary routes and delete them:
+   - `app/__design_lab/` (Next.js App Router)
+   - `pages/__design_lab.tsx` (Next.js Pages Router)
+   - `src/routes/__design_lab/` (Remix)
+   - Any other `__design_lab` route files
+
+3. Report what was cleaned up:
+   - "Deleted .gemini-design/ directory"
+   - "Deleted __design_lab route at [path]"
+   - OR "No Design Lab files found to clean up."
+
+Do not delete any other files. Only remove files that were created as part of a Design Lab session.
+"""
