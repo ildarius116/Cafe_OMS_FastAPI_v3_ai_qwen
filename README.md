@@ -16,6 +16,8 @@
 - [Структура проекта](#-структура-проекта)
 - [Уровни доступа](#-уровни-доступа)
 - [Тестирование](#-тестирование)
+- [Подключение к PostgreSQL](#-подключение-к-postgresql)
+- [Интерфейс](#-интерфейс)
 
 ---
 
@@ -441,6 +443,6 @@ docker-compose exec backend psql -U postgres -d cafe_orders -h db
 
 ---
 
-## 📝 Лицензия
-
-ISC
+## 📝 Интерфейс
+- Окно логина: ![01_login_page.png](test_screenshots/01_login_page.png)
+- Окно дашборда: ![04_after_submit.png](test_screenshots/04_after_submit.png)
