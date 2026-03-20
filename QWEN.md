@@ -1,60 +1,87 @@
-# Project Overview
+# Cafe Orders — Система управления заказами в кафе
 
-**Cafe Orders** — полнофункциональное веб-приложение для управления заказами в кафе с аутентификацией пользователей и ролевой моделью доступа.
+**Полнофункциональное веб-приложение** для управления заказами и пользователями в кафе с аутентификацией, ролевой моделью доступа и полным CRUD.
 
-**Расположение:** `E:\PycharmProjects\AI_webinar\test_project`
+**Расположение:** `E:\PycharmProjects\Cafe_OMS_FastAPI_v3_ai_qwen`
+
+**База данных:** PostgreSQL (внешняя, вне Docker)
+
+**Контейнеризация:** Docker + Docker Compose
 
 ---
 
 ## 📁 Структура проекта
 
 ```
-test_project/
+Cafe_OMS_FastAPI_v3_ai_qwen/
 ├── app/                        # Backend (FastAPI + SQLAlchemy)
 │   ├── main.py                 # Точка входа FastAPI
-│   ├── config.py               # Настройки приложения
-│   ├── database.py             # SQLAlchemy конфигурация (SQLite)
-│   ├── seed.py                 # Скрипт заполнения БД тестовыми данными
+│   ├── config.py               # Настройки приложения (pydantic-settings)
+│   ├── database.py             # SQLAlchemy конфигурация (PostgreSQL/SQLite)
+│   ├── seed.py                 # Скрипт заполнения БД
 │   ├── models/                 # SQLAlchemy модели
-│   │   ├── user.py             # User модель (7 уровней доступа)
-│   │   └── order.py            # Order, OrderItem модели
+│   │   ├── user.py             # User (7 уровней: guest→superuser)
+│   │   ├── order.py            # Order, OrderItem (many-to-many)
+│   │   └── menu_item.py        # MenuItem (меню блюд)
 │   ├── schemas/                # Pydantic схемы валидации
 │   │   ├── user.py             # UserCreate, UserUpdate, UserResponse
-│   │   └── order.py            # OrderCreate, OrderUpdate, OrderResponse
+│   │   ├── order.py            # OrderCreate, OrderUpdate, OrderResponse
+│   │   └── menu_item.py        # MenuItem schemas
 │   ├── services/               # Бизнес-логика
 │   │   ├── user_service.py     # CRUD пользователей + права доступа
-│   │   └── order_service.py    # CRUD заказов + расчёт выручки
+│   │   ├── order_service.py    # CRUD заказов + расчёт выручки
+│   │   └── menu_item_service.py# CRUD меню
 │   ├── routers/                # API endpoints
-│   │   ├── auth.py             # /api/auth/register, /api/auth/login, /api/auth/init-db
+│   │   ├── auth.py             # /api/auth/register, /login
 │   │   ├── users.py            # /api/users CRUD
-│   │   └── orders.py           # /api/orders CRUD + /revenue
+│   │   ├── orders.py           # /api/orders CRUD + /revenue
+│   │   └── menu_items.py       # /api/menu-items CRUD
 │   └── core/                   # Утилиты
 │       ├── security.py         # JWT, bcrypt хэширование
 │       └── exceptions.py       # AppError, NotFoundError, PermissionError
 ├── frontend/                   # Frontend (React 19 + TypeScript)
 │   ├── src/
 │   │   ├── pages/              # Страницы приложения
+│   │   │   ├── Dashboard.tsx
+│   │   │   ├── LoginPage.tsx
+│   │   │   ├── OrdersPage.tsx
+│   │   │   ├── UsersPage.tsx
+│   │   │   ├── ProfilePage.tsx
+│   │   │   └── RevenuePage.tsx
 │   │   ├── components/         # UI компоненты
-│   │   ├── lib/api.ts          # API клиент (axios)
-│   │   └── App.tsx             # Корневой компонент
+│   │   │   └── layout/         # Sidebar, Header
+│   │   ├── lib/                # Утилиты (api клиент, store)
+│   │   ├── App.tsx             # Корневой компонент
+│   │   └── main.tsx            # Entry point
 │   ├── package.json
 │   └── vite.config.ts
 ├── tests/                      # Pytest тесты
-│   ├── conftest.py             # pytest конфигурация
-│   ├── test_auth.py            # Тесты аутентификации (8 тестов)
-│   ├── test_users.py           # Тесты пользователей (7 тестов)
-│   ├── test_orders.py          # Тесты заказов (13 тестов)
-│   └── test_all_endpoints.py   # Интеграционные тесты (12 тестов)
+│   ├── conftest.py             # pytest конфигурация, фикстуры
+│   ├── test_auth.py            # Тесты аутентификации
+│   ├── test_users.py           # Тесты пользователей
+│   ├── test_orders.py          # Тесты заказов
+│   ├── test_orders_many_to_many.py  # Тесты many-to-many связей
+│   ├── test_all_endpoints_api.py    # Интеграционные тесты API
+│   ├── test_all_endpoints_web.py    # Web тесты
+│   └── test_ui_functional.py   # UI функциональные тесты
 ├── tasks/                      # Задачи по фазам разработки
 ├── reports/                    # Отчёты о разработке
-├── .qwen/agents/               # AI агенты для разработки
-│   ├── ui-designer.md          # Создание UI компонентов
-│   ├── code-generator.md       # Генерация backend кода
-│   ├── code-reviewer.md        # Проверка кода на ошибки
-│   └── test-generator.md       # Создание тестов
-├── requirements.txt            # Python зависимости
-├── RUN.md                      # Инструкция по запуску
-└── test_api.html               # HTML тестовая страница
+├── test_screenshots/           # Скриншоты тестов
+├── .qwen/                      # Конфигурация Qwen Code
+│   ├── agents/                 # AI агенты
+│   └── skills/                 # Скиллы
+├── .env.example                # Шаблон переменных окружения
+├── .dockerignore               # Исключения для Docker
+├── pyproject.toml              # Python зависимости (Poetry)
+├── poetry.lock                 # Заблокированные версии зависимостей
+├── pytest.ini                  # Pytest конфигурация
+├── Dockerfile                  # Docker образ backend
+├── docker-compose.yml          # Docker Compose конфигурация
+├── nginx.conf                  # Nginx конфигурация (reverse proxy)
+├── create_superuser.py         # Скрипт создания суперпользователя
+├── create_test_data.py         # Скрипт тестовых данных
+├── start.bat                   # Скрипт запуска (Windows)
+└── start.sh                    # Скрипт запуска (Linux/Mac)
 ```
 
 ---
@@ -67,10 +94,15 @@ test_project/
 | Python | 3.14+ | Язык программирования |
 | FastAPI | 0.115 | REST API фреймворк |
 | SQLAlchemy | 2.0 | ORM для работы с БД |
-| Pydantic | 2.7 | Валидация данных |
+| Pydantic | 2.9 | Валидация данных |
+| Pydantic Settings | 2.6 | Управление настройками |
+| Alembic | 1.13 | Миграции БД |
 | python-jose | 3.3 | JWT токены |
-| Passlib (bcrypt) | 1.7 | Хэширование паролей |
-| SQLite | — | База данных (WAL режим) |
+| bcrypt | 5.0 | Хэширование паролей |
+| PostgreSQL | 15+ | Основная БД |
+| psycopg2-binary | 2.9 | PostgreSQL драйвер |
+| Poetry | 2.3 | Менеджер зависимостей |
+| Docker | 20+ | Контейнеризация |
 
 ### Frontend
 | Технология | Версия | Назначение |
@@ -79,86 +111,234 @@ test_project/
 | TypeScript | 5.7 | Типизация |
 | Tailwind CSS | 3.4 | Стилизация |
 | React Router | 7.2 | Роутинг |
-| Axios | 1.7 | HTTP клиент |
 | Zustand | 5.0 | Управление состоянием |
+| Axios | 1.7 | HTTP клиент |
+| React Hook Form | 7.54 | Управление формами |
+| Zod | 3.24 | Валидация схем |
+| Lucide React | 0.475 | Иконки |
+| Vite | 6.1 | Сборщик |
 
 ### Testing
 | Технология | Версия | Назначение |
 |------------|--------|------------|
 | pytest | 8.2 | Тестовый фреймворк |
 | pytest-asyncio | 0.23.6 | Асинхронные тесты |
+| pytest-cov | 5.0 | Покрытие кода |
 | httpx | 0.27 | TestClient для FastAPI |
+| playwright | 1.40 | E2E браузерные тесты |
 
 ---
 
 ## 🚀 Запуск проекта
 
-### 1. Установка зависимостей
+### Вариант 1: Docker Compose (рекомендуется)
 
+**Требования:**
+- Docker Desktop (Windows/Mac) или Docker + Docker Compose (Linux)
+
+**1. Быстрая инициализация:**
+
+Windows:
 ```bash
-# Backend
-python -m venv venv
-venv\Scripts\activate  # Windows
-pip install -r requirements.txt
-
-# Frontend
-cd frontend
-npm install
+init.bat
 ```
 
-### 2. Запуск серверов
-
-**Terminal 1 — Backend:**
+Linux/Mac:
 ```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+bash init.sh
 ```
 
-**Terminal 2 — Frontend:**
+**2. Ручной запуск:**
+
+```bash
+# Запуск всех сервисов (backend, frontend, PostgreSQL)
+docker-compose up --build
+
+# Запуск в фоновом режиме
+docker-compose up -d
+
+# Запуск с nginx (production режим)
+docker-compose --profile production up -d
+```
+
+**3. Создание тестовых данных:**
+```bash
+# Выполнить скрипт в контейнере
+docker-compose exec backend poetry run python create_test_data.py --recreate
+```
+
+**4. Остановка:**
+```bash
+docker-compose down
+
+# Полная очистка (включая данные БД)
+docker-compose down -v
+```
+
+### Вариант 2: Локальная разработка (Poetry)
+
+**1. Установка зависимостей:**
+```bash
+# Установка Poetry (если не установлен)
+pip install poetry
+
+# Установка зависимостей
+poetry install
+```
+
+**2. Настройка PostgreSQL:**
+```bash
+# Скопируйте .env.example в .env
+cp .env.example .env
+
+# Отредактируйте DATABASE_URL в .env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/cafe_orders
+```
+
+**3. Создание тестовых данных:**
+```bash
+poetry run python create_test_data.py --recreate
+```
+
+**4. Запуск серверов:**
+
+Terminal 1 — Backend:
+```bash
+poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Terminal 2 — Frontend:
 ```bash
 cd frontend
 npm run dev
 ```
 
-### 3. Инициализация БД
-
-**Через Swagger UI (рекомендуется):**
-1. Откройте http://localhost:8000/docs
-2. Найдите `POST /api/auth/init-db`
-3. Нажмите **Try it out** → **Execute**
-
-**Через curl:**
-```bash
-curl -X POST http://localhost:8000/api/auth/init-db
-```
-
-### 4. Доступ к приложению
+### 5. Доступ к приложению
 
 | Сервис | URL |
 |--------|-----|
-| Frontend | http://localhost:3000 |
+| Frontend | http://localhost:5173 |
 | Backend API | http://localhost:8000 |
 | Swagger Docs | http://localhost:8000/docs |
-| HTML Test | `test_api.html` (открыть в браузере) |
+| ReDoc | http://localhost:8000/redoc |
+| Health Check | http://localhost:8000/health |
+| Nginx (production) | http://localhost:8080 |
+| PostgreSQL | localhost:5432 |
 
 ---
 
-## 🧪 Тестирование
+## 🔌 Подключение к PostgreSQL
 
-### Все тесты
+**Извне (DBeaver, pgAdmin, psql):**
+- Host: `localhost`
+- Port: `5432`
+- Database: `cafe_orders`
+- User: `postgres`
+- Password: `postgres`
+
+**Из контейнера backend:**
 ```bash
-python -m pytest tests/ -v
+docker-compose exec backend psql -U postgres -d cafe_orders -h db
 ```
 
-### Тесты endpoints (12 тестов)
+---
+
+## 🔐 Переменные окружения
+
+**По умолчанию (для Docker Compose):**
 ```bash
-python -m pytest tests/test_all_endpoints_api.py -v
-# Результат: 9/12 проходят (3 требуют manager+ уровень)
+# Database (PostgreSQL)
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=db  # имя сервиса в docker-compose.yml
+DB_PORT=5432
+DB_NAME=cafe_orders
+
+# Security
+SECRET_KEY=your-secret-key-change-in-production
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# CORS
+FRONTEND_URLS=http://localhost:3000,http://localhost:5173,http://localhost:8080
 ```
 
-### Тесты аутентификации
+**Для локальной разработки:**
 ```bash
-python -m pytest tests/test_auth.py -v
-# Результат: 8/8 проходят
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/cafe_orders
+SECRET_KEY=your-secret-key-change-in-production
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+FRONTEND_URLS=http://localhost:3000,http://localhost:5173,http://localhost:8080
+```
+
+---
+
+## 📦 Poetry команды
+
+```bash
+# Запустить команду в окружении Poetry
+poetry run <command>
+
+# Войти в оболочку Poetry
+poetry shell
+
+# Показать путь к виртуальному окружению
+poetry env info
+
+# Добавить новую зависимость
+poetry add <package>
+
+# Добавить dev-зависимость
+poetry add --group dev <package>
+
+# Установить все зависимости
+poetry install
+
+# Обновить зависимости
+poetry update
+```
+
+---
+
+## 🐳 Docker команды
+
+```bash
+# Запуск контейнеров
+docker-compose up --build
+
+# Запуск в фоновом режиме
+docker-compose up -d
+
+# Остановка контейнеров
+docker-compose down
+
+# Просмотр логов
+docker-compose logs -f
+
+# Просмотр логов конкретного сервиса
+docker-compose logs -f backend
+
+# Выполнить команду в контейнере
+docker-compose exec backend <command>
+
+# Пример: создание тестовых данных
+docker-compose exec backend poetry run python create_test_data.py --recreate
+
+# Пример: вход в контейнер
+docker-compose exec backend bash
+
+# Пересборка без кэша
+docker-compose build --no-cache
+
+# Запуск только backend
+docker-compose up backend
+
+# Запуск только frontend
+docker-compose up frontend
+
+# Production режим (с nginx)
+docker-compose --profile production up -d
 ```
 
 ---
@@ -170,13 +350,13 @@ python -m pytest tests/test_auth.py -v
 |-------|----------|----------|------|
 | POST | `/api/auth/register` | Регистрация нового пользователя | ❌ |
 | POST | `/api/auth/login` | Вход (возвращает JWT токен) | ❌ |
-| POST | `/api/auth/init-db` | Инициализация БД тестовыми данными | ❌ |
 
 ### Пользователи
 | Метод | Endpoint | Описание | Auth |
 |-------|----------|----------|------|
 | GET | `/api/users/me` | Текущий пользователь | ✅ |
-| GET | `/api/users` | Список пользователей | Manager+ |
+| GET | `/api/users` | Список пользователей (с фильтрами) | Manager+ |
+| GET | `/api/users/{id}` | Пользователь по ID | ✅ |
 | POST | `/api/users` | Создание пользователя | Admin+ |
 | PUT | `/api/users/{id}` | Обновление пользователя | Admin+ |
 | DELETE | `/api/users/{id}` | Удаление пользователя | Admin+ |
@@ -194,27 +374,36 @@ python -m pytest tests/test_auth.py -v
 | GET | `/api/orders/active` | Активные заказы | ❌ |
 | GET | `/api/orders/table/{num}` | Заказы по столу | ❌ |
 
+### Меню
+| Метод | Endpoint | Описание | Auth |
+|-------|----------|----------|------|
+| GET | `/api/menu-items` | Список блюд меню | ❌ |
+| GET | `/api/menu-items/{id}` | Блюдо по ID | ❌ |
+| POST | `/api/menu-items` | Добавление блюда | Admin+ |
+| PUT | `/api/menu-items/{id}` | Обновление блюда | Admin+ |
+| DELETE | `/api/menu-items/{id}` | Удаление блюда | Admin+ |
+
 ---
 
 ## 👥 Уровни доступа
 
 | Уровень | Создание | Удаление | Поиск | Редактирование |
 |---------|----------|----------|-------|----------------|
-| Гость | ❌ | ❌ | ❌ | ❌ |
-| Клиент | ✅ (себя) | ✅ (себя) | ❌ | ✅ (себя) |
-| Сотрудник | ✅ | ❌ | ❌ | ❌ |
-| Менеджер | ✅ | ❌ | ✅ | ✅ (ниже себя) |
-| Администратор | ✅ | ✅ | ✅ | ✅ (ниже себя) |
-| Руководитель | ✅ | ✅ | ✅ | ✅ (ниже себя) |
-| Суперпользователь | ✅ | ✅ | ✅ | ✅ (ниже себя) |
+| 🟦 Гость (guest) | ❌ | ❌ | ❌ | ❌ |
+| 🟦 Клиент (client) | ✅ (себя) | ✅ (себя) | ❌ | ✅ (себя) |
+| 🟩 Сотрудник (staff) | ✅ | ❌ | ❌ | ❌ |
+| 🟪 Менеджер (manager) | ✅ | ❌ | ✅ | ✅ (ниже себя) |
+| 🟥 Администратор (admin) | ✅ | ✅ | ✅ | ✅ (ниже себя) |
+| 🟦 Руководитель (director) | ✅ | ✅ | ✅ | ✅ (ниже себя) |
+| 🟨 Суперпользователь (superuser) | ✅ | ✅ | ✅ | ✅ (ниже себя) |
 
 **Важно:** Понизить любого пользователя до уровня "гость" нельзя.
 
 ---
 
-## 🔑 Тестовые учётные данные
+## 🧪 Тестовые учётные данные
 
-После инициализации БД (`POST /api/auth/init-db`):
+После запуска `create_test_data.py`:
 
 | Email | Никнейм | Пароль | Уровень |
 |-------|---------|--------|---------|
@@ -224,15 +413,64 @@ python -m pytest tests/test_auth.py -v
 | john@example.com | john_doe | client123 | client |
 | pit_v2@example.com | pit2 | 123456 | client |
 
+**Суперпользователь** (создаётся отдельно через `create_superuser.py`):
+| Email | Никнейм | Пароль | Уровень |
+|-------|---------|--------|---------|
+| super_good@cafe.ru | super_good | 12345 | superuser |
+
+---
+
+## 🧪 Тестирование
+
+### Все тесты
+```bash
+python -m pytest tests/ -v
+```
+
+### Отдельные категории
+```bash
+# Тесты аутентификации
+python -m pytest tests/test_auth.py -v
+
+# Тесты пользователей
+python -m pytest tests/test_users.py -v
+
+# Тесты заказов
+python -m pytest tests/test_orders.py -v
+
+# Тесты many-to-many связей
+python -m pytest tests/test_orders_many_to_many.py -v
+
+# Интеграционные тесты API
+python -m pytest tests/test_all_endpoints_api.py -v
+
+# UI функциональные тесты (требуется Playwright)
+python -m pytest tests/test_ui_functional.py -v
+```
+
+### С покрытием кода
+```bash
+python -m pytest tests/ -v --cov=app --cov-report=html
+```
+
 ---
 
 ## 📝 Development Conventions
 
 ### Код
 - **Типизация:** Использовать `typing` для всех функций
-- **Docstrings:** Подробные описания функций и классов
+- **Docstrings:** Подробные описания функций и классов (Google style)
 - **PEP 8:** Следовать стандартным соглашениям Python
-- **Именование:** snake_case для переменных/функций, PascalCase для классов
+- **Именование:** 
+  - `snake_case` для переменных/функций
+  - `PascalCase` для классов
+  - `UPPER_CASE` для констант
+
+### Frontend
+- **Компоненты:** Функциональные компоненты с хуками
+- **Стили:** Tailwind CSS утилитарные классы
+- **Состояние:** Zustand store для глобального состояния
+- **Формы:** React Hook Form + Zod валидация
 
 ### Тесты
 - **Именование:** `test_*.py` файлы, `test_*` функции
@@ -248,29 +486,35 @@ python -m pytest tests/test_auth.py -v
 
 ## ⚠️ Важные примечания
 
-### SQLite на Windows
-- **Проблема:** curl/urllib запросы могут блокироваться из-за конкурентного доступа
-- **Решение:** Используйте Swagger UI (http://localhost:8000/docs) или pytest тесты
-- **HTML тест:** Откройте `test_api.html` в браузере для тестирования API
+### База данных PostgreSQL
+
+**Данные сохраняются в Docker volume:**
+- `postgres_data` — именованный том для данных PostgreSQL
+- Данные сохраняются между перезапусками контейнеров
+
+**Для полного сброса БД:**
+```bash
+docker-compose down -v  # удалит том с данными
+docker-compose up --build
+docker-compose exec backend poetry run python create_test_data.py --recreate
+```
 
 ### Инициализация БД
 - Таблицы создаются автоматически при старте uvicorn
-- Тестовые данные добавляются через `POST /api/auth/init-db`
-- При ошибке блокировки: остановить uvicorn → удалить `cafe.db*` → запустить снова
+- Тестовые данные добавляются через `create_test_data.py`
+- Скрипт `create_superuser.py` создаёт суперпользователя
 
-### AI Агенты
-Проект использует 4 специализированных агента в `.qwen/agents/`:
-- **ui-designer** — Создание React компонентов
-- **code-generator** — Генерация backend кода
-- **code-reviewer** — Проверка кода на ошибки
-- **test-generator** — Создание pytest тестов
+### AI Агенты и Скиллы
+Проект использует AI агентов и скиллы в `.qwen/`:
+- **Агенты:** Для создания кода, ревью, тестов
+- **Скиллы:** Для специализированных задач
 
 ---
 
 ## 📚 Дополнительная документация
 
 - `README.md` — Основная документация проекта
-- `RUN.md` — Инструкция по запуску
 - `project_assignment.md` — Техническое задание
 - `reports/` — Отчёты по фазам разработки
-- `test_api.html` — HTML страница для тестирования API
+- `tasks/` — Задачи по разработке
+- `test_screenshots/` — Скриншоты UI тестов

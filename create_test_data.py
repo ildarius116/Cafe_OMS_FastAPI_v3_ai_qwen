@@ -203,6 +203,8 @@ def create_test_data(recreate: bool = False):
                 db.add(order_item)
                 total += item_data["quantity"] * menu_item.price
 
+            # Flush чтобы SQLAlchemy загрузил связи order_items перед установкой суммы
+            db.flush()
             # Устанавливаем общую стоимость
             order.total_price = total
 

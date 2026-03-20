@@ -1,8 +1,8 @@
 """
 Правильная работа с БД.
 
-Для production используется SQLite с WAL режимом.
-Для тестов используется БД в памяти (in-memory).
+Для development используется PostgreSQL.
+Для тестов используется SQLite в памяти.
 """
 
 from sqlalchemy import create_engine, event
@@ -14,6 +14,7 @@ from app.config import settings
 # Определяем тип БД
 IS_SQLITE = settings.database_url.startswith("sqlite")
 IS_MEMORY = ":memory:" in settings.database_url
+IS_POSTGRESQL = settings.database_url.startswith("postgresql")
 
 # Создаем движок БД
 if IS_SQLITE:
@@ -25,7 +26,7 @@ if IS_SQLITE:
         },
         pool_pre_ping=True,
     )
-    
+
     # Включаем WAL режим для SQLite
     @event.listens_for(engine, "connect")
     def set_sqlite_pragma(dbapi_connection, connection_record):
@@ -33,6 +34,21 @@ if IS_SQLITE:
         cursor.execute("PRAGMA journal_mode=WAL")
         cursor.execute("PRAGMA busy_timeout=60000")
         cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.close()
+elif IS_POSTGRESQL:
+    engine = create_engine(
+        settings.database_url,
+        pool_pre_ping=True,
+        pool_size=10,
+        max_overflow=20,
+        pool_recycle=3600,
+    )
+
+    # Настройки для PostgreSQL
+    @event.listens_for(engine, "connect")
+    def set_sqlite_pragma(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("SET TIME ZONE 'UTC'")
         cursor.close()
 else:
     engine = create_engine(settings.database_url, pool_pre_ping=True)
@@ -52,7 +68,7 @@ Base = declarative_base()
 def get_db():
     """
     Зависимость для получения сессии БД.
-    
+
     Каждая запрос создаёт НОВУЮ сессию и закрывает её после использования.
     """
     db = SessionLocal()

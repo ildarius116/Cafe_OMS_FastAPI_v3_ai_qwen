@@ -135,7 +135,7 @@ class OrderService:
         
         self.db.add(order)
         self.db.flush()  # Получаем ID заказа
-        
+
         # Создаём элементы заказа
         for item_data in data.items:
             menu_item = next(mi for mi in menu_items if mi.id == item_data.menu_item_id)
@@ -147,7 +147,10 @@ class OrderService:
                 note=item_data.note
             )
             self.db.add(order_item)
-        
+
+        # Flush чтобы SQLAlchemy загрузил связи order_items перед расчётом суммы
+        self.db.flush()
+
         # Вычисляем общую стоимость
         order.total_price = order.calculate_total()
         
@@ -203,9 +206,13 @@ class OrderService:
                     note=item_data.note
                 )
                 self.db.add(order_item)
-            
-            # Пересчитываем общую стоимость
-            order.total_price = order.calculate_total()
+
+            # Flush чтобы SQLAlchemy загрузил связи order_items перед расчётом суммы
+            self.db.flush()
+
+            # Пересчитываем общую стоимость (явно запрашиваем элементы из БД)
+            order_items = self.db.query(OrderItem).filter(OrderItem.order_id == order_id).all()
+            order.total_price = sum(item.quantity * item.price for item in order_items)
 
         order.updated_at = datetime.utcnow()
         self.db.commit()
